@@ -33,62 +33,30 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         
     }
     
-//    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-//        //        print("Camera was able to capture a frame:", Date())
-//
-//                guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-//
-//                // !!!Important
-//                // make sure to go download the models at https://developer.apple.com/machine-learning/ scroll to the bottom
-//                guard let model = try? VNCoreMLModel(for: SqueezeNet().model) else { return }
-//                let request = VNCoreMLRequest(model: model) { (finishedReq, err) in
-//
-//                    //perhaps check the err
-//
-//        //            print(finishedReq.results)
-//
-//                    guard let results = finishedReq.results as? [VNClassificationObservation] else { return }
-//
-//                    guard let firstObservation = results.first else { return }
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        //        print("Camera was able to capture a frame:", Date())
+
+                guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+
+                guard let model = try? VNCoreMLModel(for: SqueezeNet().model) else { return }
+                let request = VNCoreMLRequest(model: model) { (finishedReq, err) in
+
+                    //perhaps check the err
+
+                    print(finishedReq.results)
+
+                    guard let results = finishedReq.results as? [VNClassificationObservation] else { return }
+
+                    guard let firstObservation = results.first else { return }
 //                    DispatchQueue.main.async {
 //                        print(firstObservation.identifier, firstObservation.confidence)
 //                    }
-//
-//
-//
-//                }
-//
-//                try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
-//            }
-      func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-     //        print("Camera was able to capture a frame:", Date())
-             
-             guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-             
-             // !!!Important
-             // make sure to go download the models at https://developer.apple.com/machine-learning/ scroll to the bottom
-             guard let model = try? VNCoreMLModel(for: SqueezeNet().model) else { return }
-             let request = VNCoreMLRequest(model: model) { (finishedReq, err) in
-                 
-                 //perhaps check the err
-                 
-     //            print(finishedReq.results)
-                 
-                 guard let results = finishedReq.results as? [VNClassificationObservation] else { return }
-                 
-                 guard let firstObservation = results.first else { return }
-                 
-                 print(firstObservation.identifier, firstObservation.confidence)
-                 
-                 DispatchQueue.main.async {
-                 //    self.identifierLabel.text = "\(firstObservation.identifier) \(firstObservation.confidence * 100)"
-                 }
-                 
-             }
-             
-             try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
-         }
 
 
+
+                }
+
+                try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
+            }
 }
 
