@@ -10,6 +10,14 @@ import ARKit
 import Vision
 
 class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+    
+    let predictionLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .white
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,29 +39,39 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         dataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
         captureSession.addOutput(dataOutput)
         
+        configurePredictionLabel()
     }
     
+    // Helper funcs
+    
+    fileprivate func configurePredictionLabel(){
+        view.addSubview(predictionLabel)
+        predictionLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40).isActive = true
+        predictionLabel.centerXAnchor.isEqual(view.centerXAnchor)
+        predictionLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        predictionLabel.heightAnchor.constraint(equalToConstant: 60).isActive = true
+    }
+    
+    // protocol funcs
+    
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        //        print("Camera was able to capture a frame:", Date())
 
                 guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
                 guard let model = try? VNCoreMLModel(for: SqueezeNet().model) else { return }
                 let request = VNCoreMLRequest(model: model) { (finishedReq, err) in
 
-                    //perhaps check the err
+                    // check the err
 
-                    print(finishedReq.results)
+                    // print(finishedReq.results)
 
                     guard let results = finishedReq.results as? [VNClassificationObservation] else { return }
 
                     guard let firstObservation = results.first else { return }
-//                    DispatchQueue.main.async {
-//                        print(firstObservation.identifier, firstObservation.confidence)
-//                    }
-
-
-
+                    DispatchQueue.main.async {
+                        self.predictionLabel.text = "\(firstObservation.identifier) with \(firstObservation.confidence) confidence"
+                        print( "\(firstObservation.identifier) with \(firstObservation.confidence) confidence")
+                    }
                 }
 
                 try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
